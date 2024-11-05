@@ -12,7 +12,7 @@ struct GameView: View {
     @StateObject var viewModel: GameViewModel = GameViewModel()
     var body: some View {
         VStack {
-            Text("Welcome to 1024 by YourName!").font(.title2)
+            Text("Welcome to 1024 by Clay Beal!").font(.title2)
             NumberGrid(viewModel: viewModel)
                 .gesture(DragGesture().onEnded {
                     swipeDirection = determineSwipeDirection($0)
@@ -22,10 +22,36 @@ struct GameView: View {
                 .frame(
                     maxWidth: .infinity
                 )
-            if let swipeDirection {
-                Text("You swiped \(swipeDirection)")
+            
+            // Display win message
+            if viewModel.playerWin {
+                Text("You win!").font(.largeTitle).foregroundColor(.green)
             }
-        }.frame(maxHeight: .infinity, alignment: .top)
+            
+            // Display lose message
+            if viewModel.gameOver {
+                Text("You lose!").font(.largeTitle).foregroundStyle(.red)
+            }
+            
+            // Added Reset Button and swipe counter information
+            HStack {
+                Button("Reset") {
+                    viewModel.resetGame()
+                }
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                
+                // Puts space between the reset button and the swipe counter info
+                Spacer()
+                
+                Text("Swipe Counter: \(viewModel.swipeCounter)")
+            }
+            .padding(.horizontal)
+            
+            
+        }.padding(.all).frame(maxHeight: .infinity, alignment: .top)
     }
 }
 
@@ -39,8 +65,9 @@ struct NumberGrid: View {
                 HStack (spacing:4) {
                     ForEach(0..<size, id: \.self) { column in
                         let cellValue = viewModel.grid[row][column]
-                        Text("\(cellValue)")
+                        Text(cellValue == 0 ? "" : "\(cellValue)") // Only display something if not zero
                             .font(.system(size:26))
+                            .foregroundColor(.black) // Added this because my phone runs in dark mode
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(CGSize(width: 1, height: 1), contentMode: .fit)
                             .background(Color.white)
