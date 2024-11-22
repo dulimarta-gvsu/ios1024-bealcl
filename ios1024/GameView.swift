@@ -9,7 +9,8 @@ import SwiftUI
 
 struct GameView: View {
     @State var swipeDirection: SwipeDirection? = .none
-    @StateObject var viewModel: GameViewModel = GameViewModel()
+    @EnvironmentObject var viewModel: GameViewModel
+    @EnvironmentObject var navi: MyNavigator
     var body: some View {
         VStack {
             Text("Welcome to 1024 by Clay Beal!").font(.title2)
@@ -22,6 +23,18 @@ struct GameView: View {
                 .frame(
                     maxWidth: .infinity
                 )
+            
+            HStack {
+                Button("Logout") {
+                    navi.backHome()
+                }
+                Button("Settings") {
+                    navi.navigate(to: .SettingsDestination)
+                }
+                Button("Stats") {
+                    navi.navigate(to: .StatisticDestination)
+                }
+            }.buttonStyle(.borderedProminent)
             
             // Display win message
             if viewModel.playerWin {
@@ -57,9 +70,9 @@ struct GameView: View {
 
 struct NumberGrid: View {
     @ObservedObject var viewModel: GameViewModel
-    let size: Int = 4
 
     var body: some View {
+        let size = viewModel.grid.count
         VStack(spacing:4) {
             ForEach(0..<size, id: \.self) { row in
                 HStack (spacing:4) {
