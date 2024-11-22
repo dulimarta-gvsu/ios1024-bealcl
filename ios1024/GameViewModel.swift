@@ -5,20 +5,33 @@
 //  Created by Hans Dulimarta for CIS357
 //
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
+
 class GameViewModel: ObservableObject {
     @Published var grid: Array<Array<Int>>
     // Holds previous board state
     private var previousGrid: [Int] = []
     // Define a goal value for winning the game
-    private var goalValue: Int = 1024
+    @Published var goalValue: Int
     // non-private game vars
     var playerWin: Bool = false
     var gameOver: Bool = false
     var swipeCounter: Int = 0
     
-    init () {
-        grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
+    init (gridSize: Int = 4, goalValue: Int = 1024) {
+        self.goalValue = goalValue
+        self.grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
         insertRandom()
+    }
+    
+    func updateGridSize(gridSize: Int) {
+        self.grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
+        resetGame()
+    }
+    
+    func updateGoalValue(goal: Int) {
+        self.goalValue = goal
     }
     
     /// Will put the 2-d array into 1-d array
@@ -123,6 +136,18 @@ class GameViewModel: ObservableObject {
         }
     }
     
+    
+    func checkUserAcct(user: String, pwd: String) async -> Bool {
+        do {
+            try await Auth.auth().signIn(withEmail: user, password: pwd)
+            return true
+        } catch {
+            print("Error \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    
     /// Increments the swipe count for the user
     func incrementSwipeCount() {
         swipeCounter += 1
@@ -131,16 +156,36 @@ class GameViewModel: ObservableObject {
     /// Resets the game to the starting state and resets the player state variables
     func resetGame() {
         // Will reinitialize the array and insert one random cell, reset needed vars
-        grid = Array(repeating: Array(repeating: 0, count: 4), count: 4)
-        insertRandom()
+        let gridSize = grid.count
+        grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
         playerWin = false
         gameOver = false
         swipeCounter = 0
+        insertRandom()
     }
     
     /// Used for getting all information needed for the game statistics screen
     func endGame() {
-        // TODO: Later when I implement settings screen I will use this
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        
+        let userGamesRef = db.collection("users").document(userId).collection("games")
+        
+        let gameData: [String: Any] = [
+            "boardSize": grid.count,
+            "dateAndTime": Timestamp(),
+            "maxScore": grid.flatMap { $0 }.max() ?? 0,
+            "moves": swipeCounter,
+            "outcome": playerWin ? "win" : "lose"
+        ]
+        // Add a new game document to the user's "games" sub-collection
+        userGamesRef.addDocument(data: gameData) { error in
+            if let error = error {
+                print("Error saving game data: \(error)")
+            } else {
+                print("Game data saved successfully.")
+            }
+        }
     }
     
     /// Will put either a 2 or 4 on the game board in a random spot
