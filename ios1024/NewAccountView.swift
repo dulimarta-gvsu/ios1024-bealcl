@@ -8,8 +8,11 @@
 import SwiftUI
 import FirebaseAuth
 
+/// View for creating a user account
 struct NewAccountView: View {
+    // Navigation control
     @EnvironmentObject var navi: MyNavigator
+    // Email, pass, and error
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var createError: String = ""
@@ -24,10 +27,10 @@ struct NewAccountView: View {
             TextField("Email", text: $email)
                 .padding()
                 .keyboardType(.emailAddress)
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(8)
+                .textInputAutocapitalization(.never) // Dont capitalize words
+                .disableAutocorrection(true) // No autocorrect
+                .background(Color.gray.opacity(0.2)) // Make the background look pretty
+                .cornerRadius(8) // Round the corners
                 .padding(.horizontal)
 
             // Password SecureField

@@ -8,17 +8,22 @@
 import SwiftUI
 
 struct SettingsView: View {
+    // Navigator
     @EnvironmentObject var navi: MyNavigator
+    // Access to shared GameViewModel
     @EnvironmentObject var viewModel: GameViewModel
+    // These can change but are defaulted to 4x4 grid and 1024 goal
     @State private var selectedGridSize: Int = 4
     @State private var selectedGoalValue: Int = 1024
     
     var body: some View {
         VStack {
+            // Text at the top of the screen
             Text("Preferences")
                 .font(.largeTitle)
                 .padding()
             
+            // Displays the Grid Size option 3x3 - 7x7
             VStack(alignment: .leading) {
                 Text("Grid Size")
                     .font(.headline)
@@ -27,11 +32,12 @@ struct SettingsView: View {
                         Text("\(size) x \(size)").tag(size)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+                .pickerStyle(SegmentedPickerStyle()) // Pretty selection option
             }
             .padding()
             
             VStack(alignment: .leading) {
+                // Displays the Goal Number option
                 Text("Goal Number")
                     .font(.headline)
                 Picker("Goal Number", selection: $selectedGoalValue) {
@@ -39,17 +45,16 @@ struct SettingsView: View {
                         Text("\(goal)").tag(goal)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+                .pickerStyle(SegmentedPickerStyle()) // Pretty selection option
             }
             .padding()
             
+            // Buttons for saving changes or going back to game
             HStack {
                 Button("Save Pref") {
-                    //TODO: Something
                     savePref()
                 }
                 Button("Cancel") {
-                    //TODO: Something
                     navi.navBack()
                 }
             }
@@ -58,17 +63,20 @@ struct SettingsView: View {
         }
         .padding()
         .onAppear {
+            // Update the selected values to show what the current settings are
             selectedGridSize = viewModel.grid.count
             selectedGoalValue = viewModel.goalValue
         }
     }
     
-    
+    /// Save the selected options
     func savePref() {
+        // Update the grid size (only if it has been changed)
         if selectedGridSize != viewModel.grid.count {
             viewModel.updateGridSize(gridSize: selectedGridSize)
         }
         
+        // Update the goal values (only if it has been changed)
         if selectedGoalValue != viewModel.goalValue {
             viewModel.updateGoalValue(goal: selectedGoalValue)
         }

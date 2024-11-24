@@ -8,7 +8,9 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
+// Main view for game logic
 class GameViewModel: ObservableObject {
+    // Current board state
     @Published var grid: Array<Array<Int>>
     // Holds previous board state
     private var previousGrid: [Int] = []
@@ -19,17 +21,19 @@ class GameViewModel: ObservableObject {
     var gameOver: Bool = false
     var swipeCounter: Int = 0
     
+    // Initialize the grid to 4x4 and the goal to 1024
     init (gridSize: Int = 4, goalValue: Int = 1024) {
         self.goalValue = goalValue
         self.grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
         insertRandom()
     }
     
+    /// To change the grid size
     func updateGridSize(gridSize: Int) {
         self.grid = Array(repeating: Array(repeating: 0, count: gridSize), count: gridSize)
         resetGame()
     }
-    
+    /// To change the goal value
     func updateGoalValue(goal: Int) {
         self.goalValue = goal
     }
@@ -128,6 +132,7 @@ class GameViewModel: ObservableObject {
         // Ensure the game has not been won/lost
         checkWinCondition()
         
+        // If the game is over go to the end game tasks
         if isGameOver() {
             gameOver = true
             endGame()
@@ -136,7 +141,7 @@ class GameViewModel: ObservableObject {
         }
     }
     
-    
+    /// Sign in logic to see if you can log in with the username email and password
     func checkUserAcct(user: String, pwd: String) async -> Bool {
         do {
             try await Auth.auth().signIn(withEmail: user, password: pwd)
@@ -168,11 +173,13 @@ class GameViewModel: ObservableObject {
     func endGame() {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         let db = Firestore.firestore()
-        
+        // Reference to where I am saving the games in firebase
         let userGamesRef = db.collection("users").document(userId).collection("games")
         
+        // Game data to be saved
         let gameData: [String: Any] = [
             "boardSize": grid.count,
+            "goalScore": goalValue,
             "dateAndTime": Timestamp(),
             "maxScore": grid.flatMap { $0 }.max() ?? 0,
             "moves": swipeCounter,

@@ -8,8 +8,11 @@
 import SwiftUI
 import FirebaseAuth
 
+/// View for when attempting to sign in to an existing account
 struct SignInView: View {
+    // Navigator
     @EnvironmentObject var navi: MyNavigator
+    // Vars for email, pass, and errors
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var loginError: String = ""
@@ -23,9 +26,9 @@ struct SignInView: View {
             // Email TextField
             TextField("Email", text: $email)
                 .padding()
-                .keyboardType(.emailAddress)
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
+                .keyboardType(.emailAddress) // Catered for emails
+                .textInputAutocapitalization(.never) // No auto capitalize
+                .disableAutocorrection(true) // No autocorrect
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(8)
                 .padding(.horizontal)
@@ -63,7 +66,7 @@ struct SignInView: View {
                 // Display the error message if authentication fails
                 loginError = "Error: \(error.localizedDescription)"
             } else {
-                // On successful login, navigate to the game view
+                // On successful login, navigate to the main game screen
                 navi.navigate(to: .GameDestination)
             }
         }
